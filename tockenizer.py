@@ -2,6 +2,7 @@ import sys
 import requests
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
+import json
 
 class HuggingFaceAPI:
     def __init__(self, model_url, api_key):
@@ -27,8 +28,23 @@ class HuggingFaceAPI:
             outputs = self.model(**inputs)
         
         logits = outputs.logits
-        
-        return logits.tolist()
+
+        # Convert BatchEncoding to dictionary
+        inputs_dict = {key: value.squeeze().tolist() for key, value in inputs.items()}
+        probabilities = torch.nn.functional.softmax(logits, dim=-1)
+        labels = self.config.id2label
+        result = {
+            "inputs": inputs_dict,
+            "logits": logits.squeeze().tolist(),
+            "probabilities": probabilities.squeeze().tolist(),
+            "labels": labels,
+        }
+        # result = {
+        #     "inputs": inputs_dict,
+        #     "logits": logits.squeeze().tolist(),
+        # }
+
+        return result
 
 def main():
     if len(sys.argv) != 4:
@@ -41,9 +57,12 @@ def main():
 
     huggingface_api = HuggingFaceAPI(model_url, api_key)
 
-    # Example usage with additional tokenizer parameters
-    logits = huggingface_api.query(input_text, max_length=256, padding="max_length", truncation=True)
-    print("Logits:", logits)
+    
+    result = huggingface_api.query(input_text, max_length=20, padding="max_length", truncation=True)
+
+    # Convert the result to a JSON-formatted string with indentation
+    result_json = json.dumps(result, indent=2)
+    print(result_json)
 
 if __name__ == "__main__":
     main()
