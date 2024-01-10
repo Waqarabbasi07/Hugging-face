@@ -1,6 +1,6 @@
 import sys
 import requests
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoConfig
 import torch
 import json
 
@@ -9,7 +9,8 @@ class HuggingFaceAPI:
         self.API_URL = model_url
         self.headers = {"Authorization": f"Bearer {api_key}"}
         self.tokenizer = AutoTokenizer.from_pretrained(model_url)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_url)
+        self.config = AutoConfig.from_pretrained(model_url)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_url, config=self.config)
 
     def tokenize_text(self, text, max_length=128, padding=True, truncation=True, return_tensors="pt"):
         inputs = self.tokenizer(
@@ -31,18 +32,19 @@ class HuggingFaceAPI:
 
         # Convert BatchEncoding to dictionary
         inputs_dict = {key: value.squeeze().tolist() for key, value in inputs.items()}
+
+        # Softmax to get probabilities
         probabilities = torch.nn.functional.softmax(logits, dim=-1)
+
+        # Get label names
         labels = self.config.id2label
+
         result = {
             "inputs": inputs_dict,
             "logits": logits.squeeze().tolist(),
             "probabilities": probabilities.squeeze().tolist(),
             "labels": labels,
         }
-        # result = {
-        #     "inputs": inputs_dict,
-        #     "logits": logits.squeeze().tolist(),
-        # }
 
         return result
 
@@ -57,10 +59,8 @@ def main():
 
     huggingface_api = HuggingFaceAPI(model_url, api_key)
 
-    
-    result = huggingface_api.query(input_text, max_length=20, padding="max_length", truncation=True)
-
-    # Convert the result to a JSON-formatted string with indentation
+    # Example usage with additional tokenizer parameters
+    result = huggingface_api.query(input_text, max_length=25, padding="max_length", truncation=True)
     result_json = json.dumps(result, indent=2)
     print(result_json)
 
