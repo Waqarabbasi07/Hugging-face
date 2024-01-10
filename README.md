@@ -13,3 +13,12 @@ Install required Python packages using:
 
 ```bash
 pip install requests transformers torch
+Using Transformers>=4.13 might solve some issues.
+
+Usage
+Clone the repository:
+git clone <repository_url>
+cd <repository_directory>
+
+Run the script with the following command:
+python tockenizer.py <model_url> <api_key> <input_text>
