@@ -26,3 +26,6 @@ cd <repository_directory>
 
 ** Run the script with the following command: **
 ```python tockenizer.py <model_url> <api_key> <input_text>```
+
+## Output
+The script outputs the raw logits for each class. These logits represent the model's confidence scores for each class. You can interpret these scores based on your specific use case.
