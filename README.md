@@ -18,7 +18,9 @@ Using Transformers>=4.13 might solve some issues.
 
 ## Usage
 Clone the repository:
-```git clone <repository_url>
+
+```
+git clone <repository_url>
 cd <repository_directory>
 ```
 
